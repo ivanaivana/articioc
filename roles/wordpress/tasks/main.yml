@@ -1,0 +1,32 @@
+---
+- name: Include environment vars
+  include_vars:
+    file: "{{ env }}"
+
+- name: Configure docker_compose
+  blockinfile:
+    block: "{{ docker_compose_content }}"
+    path: "/{{ data_root }}/docker-compose.yml"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR env-{{ env }} containers"
+    mode: 0600
+  notify:
+    - Restart docker-compose
+
+- name: Define network
+  blockinfile:
+    path: "/{{ data_root }}/docker-compose.yml"
+    insertafter: "^networks"
+    content: |2
+        {{ env }}:
+          driver: bridge
+    mode: 0600
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR {{ env }} network"
+
+- name: Link containers
+  lineinfile:
+    path: "/{{ data_root }}/docker-compose.yml"
+    insertafter: "      #nginx-networks"
+    line: "      - {{ env }}"
+    mode: 0600
+  notify:
+    - Restart docker-compose

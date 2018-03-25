@@ -1,0 +1,66 @@
+---
+- name: Create group - owner of data files
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ data_owner_group }}"
+    - docker
+
+- name: Create user - owner of data files
+  user:
+    name: "{{ data_owner_user }}"
+    groups: "docker, {{ data_owner_group }}"
+    state: present
+
+- name: Create data hierarchy
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ data_owner_user }}"
+    group: "{{ data_owner_group }}"
+    mode: 0775
+  with_items:
+    - "/{{ data_root }}"
+    - "/{{ data_root }}/nginx"
+    - "/{{ data_root }}/nginx/certs"
+    - "/{{ data_root }}/logs"
+    - "/{{ data_root }}/logs/nginx"
+
+- name: Add apt key for docker
+  apt_key:
+    url: "{{ docker_key_url }}"
+    state: present
+
+- name: Add apt docker repo
+  apt_repository:
+    repo: "
+    deb {{ docker_repo_url }} {{ ansible_distribution_release }} stable"
+    state: present
+
+- name: Install docker
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - docker-ce
+  ignore_errors: yes
+
+- name: Start and enable docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Get docker-compose
+  get_url:
+    url: "{{ docker_compose_base_url }}/docker-compose-{{ ansible_system }}-{{ ansible_machine }}"
+    dest: "/usr/local/bin/docker-compose"
+    mode: 0755
+
+- name: Configure docker_compose
+  template:
+    src: docker-compose
+    dest: "/{{ data_root }}/docker-compose.yml"
+    mode: 0600

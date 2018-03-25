@@ -1,0 +1,6 @@
+---
+- hosts: all
+  roles:
+    - common
+    - { role: wordpress, env: 'prod' }
+    - { role: wordpress, env: 'dev' }

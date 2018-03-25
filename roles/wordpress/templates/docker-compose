@@ -1,0 +1,31 @@
+  {{ env }}-mysql:
+      container_name: {{ env }}-mysql
+      image: {{ docker_mysql_image }}
+      expose:
+          - '3306'
+      volumes:
+          - ./env-{{ env }}/db-data:/var/lib/mysql
+      environment:
+          - MYSQL_ROOT_PASSWORD={{ mysql_root_password }}
+      networks:
+          - {{ env }}
+      restart: always
+
+  {{ env }}-wordpress:
+      container_name: {{ env }}-wordpress
+      image: {{ docker_wordpress_image }}
+      expose:
+          - '80'
+      volumes:
+          - ./env-{{ env }}/wordpress:/var/www/html
+      environment:
+          - VIRTUAL_HOST={{ server_name }}
+          - LETSENCRYPT_HOST={{ server_name }}
+          - LETSENCRYPT_EMAIL={{ server_email }}
+          - LETSENCRYPT_TEST=false
+          - WORDPRESS_DB_USER=root
+          - WORDPRESS_DB_HOST={{ env }}-mysql:{{ mysql_port }}
+          - WORDPRESS_DB_PASSWORD={{ mysql_root_password }}
+      networks:
+        - {{ env }}
+      restart: always

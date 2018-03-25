@@ -1,0 +1,6 @@
+---
+- name: Restart docker-compose
+  command: docker-compose up -d
+  args:
+    chdir: "/{{ data_root }}"
+  become_user: "{{ data_owner_user }}"

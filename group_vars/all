@@ -1,0 +1,10 @@
+---
+docker_key_url: https://download.docker.com/linux/ubuntu/gpg
+docker_repo_url: https://download.docker.com/linux/ubuntu
+docker_compose_base_url: https://github.com/docker/compose/releases/download/1.18.0/
+data_owner_user: rundocker
+data_owner_group: rundocker
+data_root: data
+
+nginx_port: 80
+nginx_ssl_port: 443
